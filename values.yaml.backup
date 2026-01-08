@@ -1,6 +1,14 @@
+# Global configurations
+global:
+  namespace: flask-mysql-redis-app
+  host: app.sreevasmk.in
+  certificate_arn: arn:aws:acm:ap-south-1:337909748081:certificate/e2f7cebe-713c-49cc-9cf4-79683a52256e
+  vpc_cidr: 10.0.0.0/16
+
 # Flask App Configuration
 flask:
   # Basic settings
+  name: flask-mysql-redis-app
   replicas: 3
 
   # Image settings
@@ -33,6 +41,15 @@ flask:
     maxReplicas: 5
     cpuTarget: 50
     memoryTarget: 70
+
+  secrets:
+    DB_HOST: eks-infra-mysql.cf68siug04ay.ap-south-1.rds.amazonaws.com
+    REDIS_HOST: clustercfg.eks-infra-valkey.ni6vqg.aps1.cache.amazonaws.com
+    remoteRef:
+      key: rds!db-6c9adb65-9582-4ff0-ae45-41d5a05bb23b
+
+aws:
+  region: ap-south-1
 
 secrets:
   serviceAccountName: default

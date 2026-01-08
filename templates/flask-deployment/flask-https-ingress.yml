@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: "my-production-alb"
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/certificates: {{ .Values.global.certificate_arn }}
