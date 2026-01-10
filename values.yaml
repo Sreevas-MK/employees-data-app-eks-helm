@@ -1,7 +1,7 @@
 # Flask App Configuration
 flask:
   # Basic settings
-  replicas: 3
+  replicas: 5
 
   # Image settings
   image:
