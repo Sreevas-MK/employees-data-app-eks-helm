@@ -29,8 +29,8 @@ flask:
 
   # Autoscaling
   autoscaling:
-    minReplicas: 3
-    maxReplicas: 5
+    minReplicas: 5
+    maxReplicas: 8
     cpuTarget: 50
     memoryTarget: 70
 
