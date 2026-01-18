@@ -10,54 +10,9 @@ It includes:
 - External Secrets configuration to fetch database credentials from AWS Secrets Manager
 ---
 
-```mermaid
-flowchart TD
-    USER[Internet User] --> ALB[AWS ALB<br/>HTTPS/SSL]
-    
-    ALB -->|Port 3000| INGRESS[Ingress<br/>SSL Redirect]
-    INGRESS --> SERVICE[Service<br/>Namespace: flask-mysql-redis-app]
-    
-    subgraph APP_NS[Namespace: flask-mysql-redis-app]
-        POD1[Flask Pod 1<br/>Port 3000]
-        POD2[Flask Pod 2<br/>Port 3000]
-        POD3[Flask Pod 3<br/>Port 3000]
-    end
-    
-    SERVICE --> POD1
-    SERVICE --> POD2
-    SERVICE --> POD3
-    
-    HPA[HPA<br/>Auto-scaling] --> POD1
-    HPA --> POD2
-    HPA --> POD3
-    
-    SECRETS[AWS Secrets Manager] --> EXT_SEC[External Secrets]
-    EXT_SEC --> K8S_SEC[K8s Secret<br/>Database Creds]
-    K8S_SEC --> POD1
-    K8S_SEC --> POD2
-    K8S_SEC --> POD3
-    
-    EXTERNAL_DNS[ExternalDNS] -->|Updates| R53[Route 53<br/>DNS Record]
-    R53 --> USER
-    
-    POD1 -->|Port 3306| RDS[RDS MySQL]
-    POD2 -->|Port 3306| RDS
-    POD3 -->|Port 3306| RDS
-    
-    POD1 -->|Port 6379| EC[ElastiCache Redis]
-    POD2 -->|Port 6379| EC
-    POD3 -->|Port 6379| EC
-    
-    style USER fill:#e1f5e1
-    style ALB fill:#fff3cd
-    style RDS fill:#ffebee
-    style EC fill:#e8f5e8
-    style HPA fill:#f3e5f5
-    style SECRETS fill:#e3f2fd
-    style R53 fill:#f3e5f5
-    style APP_NS fill:#f0f0f0,stroke:#000,stroke-width:1px
-
-```
+<p align="center">
+  <img src="./flask-deployment.png" alt="flask-deployment" width="800">
+</p>
 
 ## Application Deployment - flask-app-deployment.yml
 
