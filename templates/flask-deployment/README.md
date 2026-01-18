@@ -11,34 +11,33 @@ It includes:
 ---
 
 ```mermaid
-
 flowchart TD
-    USER[Internet User] --> ALB[AWS ALB\nHTTPS/SSL]
+    USER[Internet User] --> ALB[AWS ALB<br/>HTTPS/SSL]
     
-    ALB -->|Port 3000| INGRESS[Ingress\nSSL Redirect]
-    INGRESS --> SERVICE[Service\nNamespace: flask-mysql-redis-app]
+    ALB -->|Port 3000| INGRESS[Ingress<br/>SSL Redirect]
+    INGRESS --> SERVICE[Service<br/>Namespace: flask-mysql-redis-app]
     
     subgraph APP_NS[Namespace: flask-mysql-redis-app]
-        POD1[Flask Pod 1\nPort 3000]
-        POD2[Flask Pod 2\nPort 3000]
-        POD3[Flask Pod 3\nPort 3000]
+        POD1[Flask Pod 1<br/>Port 3000]
+        POD2[Flask Pod 2<br/>Port 3000]
+        POD3[Flask Pod 3<br/>Port 3000]
     end
     
     SERVICE --> POD1
     SERVICE --> POD2
     SERVICE --> POD3
     
-    HPA[HPA\nAuto-scaling] --> POD1
+    HPA[HPA<br/>Auto-scaling] --> POD1
     HPA --> POD2
     HPA --> POD3
     
     SECRETS[AWS Secrets Manager] --> EXT_SEC[External Secrets]
-    EXT_SEC --> K8S_SEC[K8s Secret\nDatabase Creds]
+    EXT_SEC --> K8S_SEC[K8s Secret<br/>Database Creds]
     K8S_SEC --> POD1
     K8S_SEC --> POD2
     K8S_SEC --> POD3
     
-    EXTERNAL_DNS[ExternalDNS] -->|Updates| R53[Route 53\nDNS Record]
+    EXTERNAL_DNS[ExternalDNS] -->|Updates| R53[Route 53<br/>DNS Record]
     R53 --> USER
     
     POD1 -->|Port 3306| RDS[RDS MySQL]
@@ -57,6 +56,7 @@ flowchart TD
     style SECRETS fill:#e3f2fd
     style R53 fill:#f3e5f5
     style APP_NS fill:#f0f0f0,stroke:#000,stroke-width:1px
+
 ```
 
 ## Application Deployment - flask-app-deployment.yml
