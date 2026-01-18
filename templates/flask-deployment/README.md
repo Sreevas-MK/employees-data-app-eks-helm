@@ -11,7 +11,7 @@ It includes:
 ---
 
 <p align="center">
-  <img src="./flask-deployment.png" alt="flask-deployment" width="800">
+  <img src="./flask-deployment.png" alt="flask-deployment" width="500">
 </p>
 
 ## Application Deployment - flask-app-deployment.yml
