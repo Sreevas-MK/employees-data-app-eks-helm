@@ -1,110 +1,167 @@
-This README is designed for a professional GitHub repository or internal documentation. It explains not just **what** the files are, but **how they work together** to create a production-grade environment.
+This section contains all Kubernetes manifests required to deploy and expose the application on Amazon EKS using Helm.
 
+It includes:
+- Flask application Deployment configuration
+- Horizontal Pod Autoscaler (HPA) for automatic scaling
+- Cluster-internal Service for pod networking
+- HTTPS Ingress using AWS Application Load Balancer (ALB)
+- External Secrets configuration to fetch database credentials from AWS Secrets Manager
 ---
 
-# Flask Production Stack on AWS EKS
+## Application Deployment - flask-app-deployment.yml
 
-This repository contains the Kubernetes Helm templates for a high-availability Flask application. The architecture leverages AWS-managed services (RDS, ElastiCache) and industry-standard Kubernetes operators (AWS Load Balancer Controller, External Secrets).
+- Deploys the Flask application as Kubernetes pods
+- Uses Helm values for configuration
+- Connects the app to Amazon RDS (MySQL) and ElastiCache (Redis)
+- Applies security best practices
+- Supports autoscaling using HPA
 
-## 🏗️ System Architecture
+### Deployment
+Creates and manages Flask application pods in the specified namespace.
 
-1. **Traffic Flow:** User → Route53 → **Application Load Balancer (ALB)** → Target Group (IP mode) → **Flask Pods**.
-2. **Configuration:** Environment variables for endpoints; **External Secrets Operator** for sensitive credentials.
-3. **Persistence:** State is stored in **RDS (MySQL)**; Caching is handled by **ElastiCache (Valkey/Redis)**.
-4. **Scaling:** The **Horizontal Pod Autoscaler (HPA)** monitors CPU/RAM and adjusts the replica count dynamically.
+- Uses labels for pod selection
+- HPA controls the number of replicas (replica count is commented)
 
----
+Container Image
+```yaml
+image: repository:tag
+````
 
-## 📂 Manifest Explanations
+* Image is pulled from Docker Hub
+* Tag is updated automatically via CI/CD
+* Same image is reused across environments
 
-### 1. `flask-app-deployment.yml` (The Brain)
+Ports
 
-Defines how the Flask containers run.
-
-* **Security Context:** Implements a "Restricted" security profile. The filesystem is **read-only** (preventing malware injection), and it runs as a **non-root user**.
-* **Probes:** * *Readiness:* Ensures the app is connected to DB/Redis before receiving traffic.
-* *Liveness:* Automatically restarts the container if the Python process hangs.
-
-
-* **Volumes:** Maps a virtual `tmp` directory in memory since the container's own disk is locked.
-
-### 2. `flask-https-ingress.yml` (The Gateway)
-
-Controls how the world reaches your app via the **AWS Load Balancer Controller**.
-
-* **SSL Redirect:** A "Logic-based" annotation that catches HTTP (80) requests and forces them to HTTPS (443).
-* **Target Type (IP):** Traffic goes directly from the ALB to the Pod IP, skipping the "Kube-proxy" hop for lower latency.
-* **Group Name:** Allows this Ingress to share a single ALB with other services (like ArgoCD or Grafana) to save costs.
-
-### 3. `flask-app-secrets.yml` (The Vault)
-
-Integrates with **AWS Secrets Manager**.
-
-* Instead of storing passwords in plain text or Git, this manifest tells the cluster: *"Go to AWS, find the secret at this ARN, and sync the 'password' field into a Kubernetes secret."*
-* **Refresh Interval:** Automatically updates the password in the cluster if it is rotated in AWS.
-
-### 4. `flask-app-hpa.yml` (The Muscle)
-
-Automates the scaling of your application.
-
-* **CPU (50%) & Memory (70%):** If the average load exceeds these targets, the HPA will trigger the EKS Node Group to scale up (if needed) and spin up more Flask pods.
-
----
-
-## 🛠️ Configuration & Environment Variables
-
-The application expects the following environment variables to be injected (defined in the Deployment):
-
-| Variable | Source | Description |
-| --- | --- | --- |
-| `DATABASE_HOST` | `values.yaml` | The RDS Endpoint. |
-| `REDIS_HOST` | `values.yaml` | The ElastiCache Endpoint. |
-| `DATABASE_USER` | AWS Secrets Manager | Synced via External Secrets. |
-| `DATABASE_PASSWORD` | AWS Secrets Manager | Synced via External Secrets. |
-
----
-
-## 🚀 How to Deploy
-
-### 1. Prepare AWS Secrets
-
-Ensure you have a secret in AWS Secrets Manager containing:
-
-```json
-{
-  "username": "admin",
-  "password": "your-secure-password"
-}
-
+```yaml
+containerPort: 3000
 ```
 
-### 2. Install via Helm
+* Flask app listens on port 3000 inside the container
+* Service and Ingress route traffic to this port
 
-```bash
-helm upgrade --install flask-app ./manifests \
-  --namespace flask-app \
-  --create-namespace \
-  -f values.yaml
+### Health Checks (Probes)
 
+Prevents broken pods from receiving traffic & improves availability during deployments
+
+* Liveness Probe: Checks `/status` & restarts the container if the app becomes unhealthy
+* Readiness Probe: Checks `/status` and ensures traffic is sent only when the app is ready
+
+### Security Context
+
+It Reduces attack surface. Follows Kubernetes and EKS security best practices. The container runs with strict security settings:
+
+* Runs as non-root user
+* No privilege escalation
+* Read-only root filesystem
+* All Linux capabilities dropped
+* Uses default seccomp profile
+
+### Resource Management
+
+* Ensures fair resource usage
+* Prevents one pod from consuming all node resources
+* Required for autoscaling to work correctly
+
+```yaml
+requests:
+  cpu: 50m
+  memory: 128Mi
+limits:
+  cpu: 100m
+  memory: 256Mi
 ```
 
-### 3. Verify the ALB
+### Environment Variables
 
-Check the Ingress status to find the Load Balancer DNS:
+Sensitive data is not stored in plain text
 
-```bash
-kubectl get ingress flask-app-ingress -n flask-app
+Env variables are configured using Helm values and Kubernetes Secrets:
 
+* Database host (RDS)
+* Redis host (ElastiCache)
+* Ports for MySQL and Redis
+
+Secrets are loaded securely using:
+
+```yaml
+envFrom:
+  - secretRef
 ```
+
+### Temporary Storage
+
+Needed because root filesystem is read-only. They are Used for temporary runtime files
+
+```yaml
+emptyDir volume mounted at /tmp
+```
+---
+
+## Flask Application Autoscaling (HPA) - flask-app-hpa.yml
+
+This defines a Kubernetes Horizontal Pod Autoscaler (HPA) for the Flask application deployed using Helm.
+
+The HPA automatically adjusts the number of Flask pods based on CPU and memory usage.
 
 ---
 
-## 🛡️ Security Features
+## Flask Application Service - flask-app-service.yml
 
-* **Network Privacy:** The app is deployed in Private Subnets; only the ALB is Public.
-* **No Hardcoded Secrets:** Zero credentials exist in the source code.
-* **Resource Quotas:** CPU/Memory requests and limits prevent a single pod from crashing the entire Node.
+This file defines a Kubernetes Service for the Flask application.
+The Service provides a stable network endpoint to access Flask pods inside the cluster.
 
 ---
 
-**Would you like me to generate the corresponding `values.yaml` file so you can test this deployment immediately?**
+## Flask HTTPS Ingress (AWS ALB)
+
+This Ingress exposes the Flask application to the internet using an AWS Application Load Balancer with HTTPS. It is deployed using a Helm template and is managed by the AWS Load Balancer Controller.
+
+- The ALB is created as internet-facing and listens on both HTTP (80) and HTTPS (443).  
+- HTTP traffic is redirected to HTTPS using an ALB redirect action.
+
+- TLS is terminated at the ALB using an ACM certificate.  
+- A modern SSL policy is enforced for secure communication.
+
+- The ALB uses IP target mode, so traffic is routed directly to pod IPs.  
+- Health checks are performed on the `/status` endpoint to ensure only healthy pods receive traffic.
+
+- Multiple Ingress resources can share the same ALB using a common group name.
+
+- ExternalDNS automatically creates or updates the Route 53 DNS record for the application domain and points it to the ALB.
+
+- The Ingress is handled by the `alb` ingress class, ensuring it is processed by the AWS Load Balancer Controller.
+
+- Routing rules match the application domain.  
+ * HTTP requests are redirected to HTTPS.  
+ * HTTPS requests are forwarded to the Flask Service.  
+ * The Service load-balances traffic across the Flask pods.
+
+Traffic flow:
+User → Route 53 → ALB → Flask Service → Flask Pods
+
+---
+
+## Flask Application Secrets (External Secrets)
+
+This manifest creates Kubernetes secrets using External Secrets Operator.
+
+Secrets are fetched from AWS Secrets Manager through a ClusterSecretStore.
+
+The ExternalSecret resource runs in the application namespace and creates a Kubernetes Secret named `flask-app-secret`.
+
+Secrets are refreshed every 10 seconds to keep values in sync with AWS.
+
+The secret store reference points to `aws-secret-store`, which is configured at cluster level.
+
+The created Kubernetes Secret is owned by this ExternalSecret and is retained even if the ExternalSecret is deleted.
+
+Database credentials are pulled from a single AWS Secrets Manager secret.
+- `DATABASE_USER` is mapped from the `username` field
+- `DATABASE_PASSWORD` is mapped from the `password` field
+
+These secrets are later consumed by the Flask Deployment using `envFrom`.
+
+Flow:
+AWS Secrets Manager → External Secrets Operator → Kubernetes Secret → Flask Pods
+---
