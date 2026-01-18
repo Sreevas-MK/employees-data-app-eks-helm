@@ -1,3 +1,5 @@
+# Overview
+
 This section contains all Kubernetes manifests required to deploy and expose the application on Amazon EKS using Helm.
 
 It includes:
@@ -162,6 +164,8 @@ Database credentials are pulled from a single AWS Secrets Manager secret.
 
 These secrets are later consumed by the Flask Deployment using `envFrom`.
 
-Flow:
+Flow: 
+
 AWS Secrets Manager → External Secrets Operator → Kubernetes Secret → Flask Pods
+
 ---

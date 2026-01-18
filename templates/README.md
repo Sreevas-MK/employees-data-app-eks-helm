@@ -5,6 +5,3 @@ This directory contains all Helm templates required to deploy the Flask applicat
 The templates are organized into two sections:
 - Application deployment resources
 - Network security policies
-
----
-
