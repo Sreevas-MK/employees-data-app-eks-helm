@@ -1,4 +1,4 @@
-# Flask Employees Data Application (EKS Deployment)
+# Employees Data Application (EKS Deployment)
 
 This Helm chart deploys a high-availability **Flask application** on Amazon EKS. The app is integrated with **Amazon RDS (MySQL)** and **Amazon ElastiCache (Valkey/Redis)**, using **External Secrets Operator (ESO)** for secure management of database credentials. It is designed to demonstrate a production-ready, scalable, and secure deployment on EKS.
 
