@@ -3,15 +3,10 @@
 This directory contains Kubernetes NetworkPolicies used to control network traffic for the Flask application running on Amazon EKS.
 These policies are used to secure the application by allowing only the required traffic and blocking everything else.
 
----
-
 <p align="center">
-  <img src="./Network_policies.png" alt="EKS project Architecture" width="800">
+  <img src="./Network_policies.png" alt="EKS project Architecture" width="1000">
 </p>
 
----
-
-## Why Network Policies are Used
 
 By default, Kubernetes allows all pods to talk to each other.
 In production, this is not secure.
@@ -22,8 +17,6 @@ These NetworkPolicies:
 - Protect the application from unwanted access
 
 ---
-
-## What is Allowed and Why
 
 ### 1. Default Deny Policy
 This policy blocks all incoming and outgoing traffic for pods in the namespace.
