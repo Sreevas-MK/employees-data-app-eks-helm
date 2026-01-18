@@ -86,14 +86,4 @@ helm uninstall flask-app -n flask-mysql-redis-app
 kubectl delete -f namespace.yml
 ```
 
-```
-
-This keeps it **simple, professional, and informative**:
-
-- Explains **why the app exists**.  
-- Clarifies **two values files** and their purpose.  
-- Leaves deployment instructions clean.  
-
-If you want, I can also **add a simple diagram/flowchart section directly in this README** to visualize the app, HPA, ALB, secrets, and database connections. That would make it fully self-contained. Do you want me to do that?
-```
-
+---
