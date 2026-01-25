@@ -18,6 +18,11 @@ This Helm chart deploys a high-availability **Flask application** on Amazon EKS.
 
 ---
 
+## Application Source Code Repository
+
+The Flask application deployed by this Helm chart is maintained in a separate source repository:
+https://github.com/Sreevas-MK/employees-data-app.git
+
 ## Configuration Strategy
 
 There are **two values files** in this chart:
