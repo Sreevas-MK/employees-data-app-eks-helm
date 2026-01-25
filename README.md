@@ -4,6 +4,10 @@ This Helm chart deploys a high-availability **Flask application** on Amazon EKS.
 
 ---
 
+<p align="center">
+  <img src="./images/employees-data-app-eks-helm.png" alt="employees-data-app-eks-helm" width="500">
+</p>
+
 ## Purpose of this Application
 
 * Hosts employee data in a Flask web application.
