@@ -2,22 +2,18 @@
 flask:
   # Basic settings
   replicas: 5
-
   # Image settings
   image:
     repository: sreevasmk1993/employees-data-app
-    tag: latest
-
+    tag: b4e189737c78e22612908bee8a5d743e5bd22b9f
   # Port
   containerPort: 3000
-
   # Health check paths
   probes:
     liveness:
-      path: /status           # Health check endpoint
+      path: /status # Health check endpoint
     readiness:
-      path: /status           # Same endpoint
-
+      path: /status # Same endpoint
   # Resource limits
   resources:
     requests:
@@ -26,21 +22,17 @@ flask:
     limits:
       memory: "256Mi"
       cpu: "100m"
-
   # Autoscaling
   autoscaling:
     minReplicas: 5
     maxReplicas: 8
     cpuTarget: 50
     memoryTarget: 70
-
 secrets:
   serviceAccountName: default
-
 # Argocd
 argocd:
-  enabled: false  # Set to false if not using ArgoCD
-
+  enabled: false # Set to false if not using ArgoCD
 monitoring:
   enabled: true
   namespace: monitoring
