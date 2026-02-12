@@ -5,7 +5,7 @@ flask:
   # Image settings
   image:
     repository: sreevasmk1993/employees-data-app
-    tag: 033522a9dfd7a55d857b9eb5376892788048653b
+    tag: 5df199427d6d2518ba73bb61bf504852413ea281
   # Port
   containerPort: 3000
   # Health check paths
